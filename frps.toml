@@ -1,0 +1,13 @@
+bindPort = 7000
+
+[auth]
+method = "token"
+token = "CHANGE_ME_TO_A_LONG_RANDOM_TOKEN"
+
+[transport]
+tls.force = true
+
+[log]
+to = "/var/log/frp/frps.log"
+level = "info"
+maxDays = 7

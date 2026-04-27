@@ -1,0 +1,12 @@
+services:
+  frps:
+    build:
+      context: .
+      args:
+        FRP_VERSION: "0.68.1"
+    container_name: myfrps-container
+    network_mode: host
+    restart: always
+    volumes:
+      - ./frps.toml:/etc/frp/frps.toml
+      - ./logs:/var/log/frp

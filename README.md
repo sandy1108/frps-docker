@@ -215,7 +215,73 @@ args:
 
 ---
 
-### 第五步：构建并启动
+### 第五步：先确认云主机上有可用的 Compose
+
+当前文档默认使用的是：
+
+```bash
+docker compose up -d --build
+```
+
+也就是 **Docker Compose v2 插件**。
+
+但实际在一些老云主机或 Ubuntu 系统仓库环境中，常见情况是：
+- 只有旧版 `docker-compose` v1
+- 或者 `docker compose` 根本不存在
+- 或者系统里已经有正在运行的 `docker.io` / containerd / 网络代理环境，不适合为了装 compose 去大改 Docker 包来源
+
+### 推荐的低风险处理方式
+
+如果你的机器上：
+- `docker compose` 不可用
+- 但现有 Docker Engine 还能正常工作
+- 又不想因为补 compose 去动本机 Docker 包体系
+
+那么更稳的做法通常是：**直接安装独立的 `docker-compose` 二进制**，而不是先切 Docker 官方 apt 仓库。
+
+示例：
+
+```bash
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
+如有需要，可再补一个软链接：
+
+```bash
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+```
+
+验证：
+
+```bash
+docker-compose --version
+```
+
+如果 GitHub 下载较慢，可自行替换为你信任的镜像/加速源。
+
+> [!warning] 不要轻易在已有业务运行的服务器上混改 Docker 包体系
+> 如果机器当前使用的是 Ubuntu 系统仓库的 `docker.io`，而你只是缺一个 compose，优先考虑独立二进制方案。直接切换 Docker 官方 apt 仓库、混装 CLI/plugin，虽然在某些环境可行，但也可能影响现有 Docker、网络代理或依赖它们的服务。
+
+### 什么时候用 `docker compose`，什么时候用 `docker-compose`
+
+- 如果你机器上已经有 **Compose v2 插件**：优先用
+
+```bash
+docker compose up -d --build
+```
+
+- 如果你当前机器上采用的是上面的**独立二进制安装**方式：就直接用
+
+```bash
+docker-compose up -d --build
+```
+
+两者都能完成当前项目部署，关键是：**先选对你这台机器风险更低的安装方式。**
+
+---
+
+### 第六步：构建并启动
 
 进入目录：
 
@@ -223,10 +289,16 @@ args:
 cd /opt/frps
 ```
 
-执行：
+如果你的机器已经具备 Compose v2：
 
 ```bash
 docker compose up -d --build
+```
+
+如果你采用的是上一步的独立二进制方案：
+
+```bash
+docker-compose up -d --build
 ```
 
 说明：
@@ -235,7 +307,7 @@ docker compose up -d --build
 
 ---
 
-### 第六步：检查容器状态
+### 第七步：检查容器状态
 
 查看容器：
 
@@ -263,7 +335,7 @@ docker logs -f myfrps-container
 
 ---
 
-### 第七步：云主机安全组 / 防火墙放行端口
+### 第八步：云主机安全组 / 防火墙放行端口
 
 至少要确保：
 
